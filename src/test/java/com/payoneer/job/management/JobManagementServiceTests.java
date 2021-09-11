@@ -9,6 +9,7 @@ import com.payoneer.job.management.services.JobManagementService;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.concurrent.ScheduledFuture;
@@ -20,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class JobManagementServiceTests {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JobManagementServiceTests.class);
+
+	@Autowired
+	JobManagementService jobManagementService;
 
 	@Test
 	public void whenMultiplePriorityJobsAreQueued_thenHighestPriorityJobArePickedFirst() throws InterruptedException {
@@ -37,8 +41,6 @@ class JobManagementServiceTests {
 		assertEquals(JobState.QUEUED, emailJob4.getJobState());
 		assertEquals(JobState.QUEUED, emailJob5.getJobState());
 		assertEquals(JobState.QUEUED, emailJob6.getJobState());
-
-		JobManagementService jobManagementService = new JobManagementService();
 
 		jobManagementService.scheduleJob(emailJob1);
 		jobManagementService.scheduleJob(emailJob2);
@@ -62,9 +64,8 @@ class JobManagementServiceTests {
 	@Test
 	public void whenAJobFails_thenTheStatusShouldBeFailedAfterExecution() throws InterruptedException {
 		AbstractJob emailJob1 = new FailingEmailJob("failingEmailJob", 0L, TimeUnit.SECONDS, JobPriority.LOW);
-		AbstractJob emailJob2 = new SendEmailJob("succesfulEmailJob", 0L, TimeUnit.SECONDS, JobPriority.LOW);
+		AbstractJob emailJob2 = new SendEmailJob("successfulEmailJob", 0L, TimeUnit.SECONDS, JobPriority.LOW);
 
-		JobManagementService jobManagementService = new JobManagementService();
 
 		jobManagementService.scheduleJob(emailJob1);
 		jobManagementService.scheduleJob(emailJob2);
@@ -81,8 +82,6 @@ class JobManagementServiceTests {
 	public void whenADelayIsGreaterThanZero_thenTheJobShouldOnlyExecuteAfterTheSetDelay() throws InterruptedException {
 		AbstractJob delayedJob = new SendEmailJob("delayedJob", 7L, TimeUnit.SECONDS, JobPriority.LOW);
 		AbstractJob immediateJob = new SendEmailJob("immediateJob", 0L, TimeUnit.SECONDS, JobPriority.LOW);
-
-		JobManagementService jobManagementService = new JobManagementService();
 
 		jobManagementService.scheduleJob(delayedJob);
 		jobManagementService.scheduleJob(immediateJob);

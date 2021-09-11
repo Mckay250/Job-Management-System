@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.*;
@@ -15,18 +16,19 @@ public class JobManagementService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobManagementService.class);
 
-    private final ScheduledExecutorService scheduledExecutorService;
+    private ScheduledExecutorService scheduledExecutorService;
     private PriorityBlockingQueue<AbstractJob> jobQueue;
 
 
-//    @Value("${POOL_SIZE}:2")
-    private int poolSize = 2;
+    @Value("${pool.size}")
+    private int poolSize;
 
-//    @Value("${INITIAL_QUEUE_SIZE}:8")
-    private int initialQueueSize = 10;
+    @Value("${initial.queue.size}")
+    private int initialQueueSize;
 
 
-    public JobManagementService() {
+    @PostConstruct
+    public void init() {
         scheduledExecutorService = Executors.newScheduledThreadPool(poolSize);
         jobQueue = new PriorityBlockingQueue<>(
                 initialQueueSize,
